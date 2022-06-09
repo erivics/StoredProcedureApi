@@ -2,6 +2,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using StoredProcedureApi.Models;
+using StoredProcedureApi.SPEndpoints;
 
 namespace StoredProcedureApi.Repository
 {
@@ -20,41 +21,51 @@ namespace StoredProcedureApi.Repository
         public async Task<int> CreateUserAsync(UserProfile model)
         {
            //Declaring Parameters binding
-           var emailAddParm = new SqlParameter("@emailAddress", model.EmailAddress);
-           var passwordHashParam = new SqlParameter("@passwordHash", model.PasswordHash);
-           var oldParam = new SqlParameter("@old", model.Old);
-           var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
-           var userIdParam = new SqlParameter("@id int out", SqlDbType.Int);
-           userIdParam.Direction = ParameterDirection.InputOutput;
+       
+        //    var emailAddParm = new SqlParameter("@emailAddress", model.EmailAddress);
+        //    var passwordHashParam = new SqlParameter("@passwordHash", model.PasswordHash);
+        //    var oldParam = new SqlParameter("@old", model.Old);
+        //    var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
+           var userIdParam = new SqlParameter("@Id", SqlDbType.Int);
+           userIdParam.Direction = ParameterDirection.Output; 
            int result = new int();
             
            try
            {
                if(model != null)
-                {       
-                   await _context.Database.ExecuteSqlRawAsync("exec sp_CreateUser @emailAddress, @passwordHash, @old, @oldProvider, @id int out",emailAddParm,passwordHashParam,oldParam,oldProvParam,userIdParam);
-                   var result2 = Convert.ToInt32(userIdParam.SqlValue); 
+                {                            
+                   await _context.Database.ExecuteSqlRawAsync(Endpoints.SqlCreateUsers,model.Id,model.EmailAddress,model.PasswordHash,model.Old,model.OldProvider,userIdParam);                  
+                   var result2 = Convert.ToInt32(userIdParam.Value); 
                    result = result2;
 
                 }
-                return -1;
+                else
+                {
+                    return -1;
+                }
            
            }
            catch (SqlException ex)
            {
-               
-               _logger.LogInformation($"Error while creating user :{ex.Message}");
+               _logger.LogInformation($"Error creating User:{ex.Message}");
+                
            }
             return result;
           
         }
 
+        public Task<bool> DeletUsersAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<UserProfile>> GetUsersAsync(string email, string passwordHash)
         {
+            
             var emailAddParm = new SqlParameter("@emailAddress", email);
             var passwordHashParam = new SqlParameter("@passwordHash", passwordHash);
              
-            var users =  _context.UserProfiles.FromSqlRaw("exec sp_GetUsers @emailAddress,@passwordHash", emailAddParm, passwordHashParam).ToList();
+            var users =  _context.UserProfiles.FromSqlRaw(Endpoints.SqlGetUsers, emailAddParm, passwordHashParam).ToList();
             
              if(users.Count < 0)
               {
@@ -64,6 +75,11 @@ namespace StoredProcedureApi.Repository
               {
                  return Task.FromResult<List<UserProfile>>(users).Result;
               }     
+        }
+
+        public Task<UserProfile> UpdateUser(UserProfile model)
+        {
+            throw new NotImplementedException();
         }
     }
 }
