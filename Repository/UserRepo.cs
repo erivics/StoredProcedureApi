@@ -1,4 +1,5 @@
-using System.Data;
+ using System.Data;
+using System.Dynamic;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using StoredProcedureApi.Models;
@@ -22,19 +23,20 @@ namespace StoredProcedureApi.Repository
         {
            //Declaring Parameters binding
        
-        //    var emailAddParm = new SqlParameter("@emailAddress", model.EmailAddress);
-        //    var passwordHashParam = new SqlParameter("@passwordHash", model.PasswordHash);
-        //    var oldParam = new SqlParameter("@old", model.Old);
-        //    var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
+           var emailAddParm = new SqlParameter("@emailAddress", model.EmailAddress);
+           var passwordHashParam = new SqlParameter("@passwordHash", model.PasswordHash);
+           var oldParam = new SqlParameter("@old", model.Old);
+           var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
            var userIdParam = new SqlParameter("@Id", SqlDbType.Int);
            userIdParam.Direction = ParameterDirection.Output; 
            int result = new int();
+          
             
            try
            {
                if(model != null)
                 {                            
-                   await _context.Database.ExecuteSqlRawAsync(Endpoints.SqlCreateUsers,model.Id,model.EmailAddress,model.PasswordHash,model.Old,model.OldProvider,userIdParam);                  
+                   await _context.Database.ExecuteSqlRawAsync(Endpoints.SqlCreateUsers,emailAddParm,oldParam,oldProvParam,userIdParam);                  
                    var result2 = Convert.ToInt32(userIdParam.Value); 
                    result = result2;
 

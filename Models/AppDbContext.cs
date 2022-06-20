@@ -11,9 +11,9 @@ namespace StoredProcedureApi.Models
 
         public DbSet<UserProfile> UserProfiles {get; set;}
 
-        // protected override void OnModelCreating(ModelBuilder builder)
-        // {
-        //     base.OnModelCreating(builder);
-        // }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }
