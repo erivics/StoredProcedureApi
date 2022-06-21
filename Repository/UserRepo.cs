@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using StoredProcedureApi.Models;
 using StoredProcedureApi.SPEndpoints;
 using System.Data.SqlClient;
-using System.Data.Common;
+using System.Configuration;
+
 
 namespace StoredProcedureApi.Repository
 {
@@ -13,31 +14,49 @@ namespace StoredProcedureApi.Repository
     {
         private readonly AppDbContext _context;
         private readonly ILogger<UserRepo> _logger;
+        private string _conn;
 
-        public UserRepo(AppDbContext context, ILogger<UserRepo> logger)
+        public UserRepo(AppDbContext context, ILogger<UserRepo> logger, IConfiguration config)
         {
             _context = context;
             _logger = logger;
-            
+            _conn = config.GetConnectionString("DConnection");
         }
+      
 
-        public async Task<int> CreateUserAsync(UserProfile model)
+        public int CreateUserAsync(UserProfile model)
         {
            //Declaring Parameters binding
-           var emailAddParm = new SqlParameter("@emailAddress",model.EmailAddress);
+           SqlConnection connection = new SqlConnection(_conn);
+           SqlCommand sqlCommand = new SqlCommand(Endpoints.SpCreateUsers, connection);
+           sqlCommand.CommandType = CommandType.StoredProcedure;
+           sqlCommand.Parameters.AddWithValue("@emailAddress",model.EmailAddress);
+           sqlCommand.Parameters.AddWithValue("@passwordHash", model.PasswordHash);
+           sqlCommand.Parameters.AddWithValue("@old", model.Old);
+           sqlCommand.Parameters.AddWithValue("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
+           //sqlCommand.Parameters.AddWithValue("@useridout", SqlDbType.Int);
+
+
+           /*var emailAddParm = new SqlParameter("@emailAddress",model.EmailAddress);
            var passwordHashParam = new SqlParameter("@passwordHash", model.PasswordHash);
            var oldParam = new SqlParameter("@old", model.Old);
            var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
            var userIdParam = new SqlParameter("@useridout", SqlDbType.Int);
-           userIdParam.Direction = ParameterDirection.Output; 
+           userIdParam.Direction = ParameterDirection.Output; */
            int result = new int();
            try
            {
                if(model != null)
                 {                            
-                   await _context.Database.ExecuteSqlRawAsync(Endpoints.SqlCreateUsers,emailAddParm,passwordHashParam,oldParam,oldProvParam,userIdParam);                  
-                   var result2 = Convert.ToInt32(userIdParam.Value); 
-                   result = result2;
+                  // await _context.Database.ExecuteSqlRawAsync(sqlCommand,emailAddParm,passwordHashParam,oldParam,oldProvParam,userIdParam);                  
+                   //var result2 = Convert.ToInt32(userIdParam.Value); 
+                   connection.Open();
+                   var res = sqlCommand.ExecuteNonQuery();
+                   connection.Close();
+            
+
+                   //using(IDataReader dr = sqlCommand.ExecuteReader())
+                   result = res;
 
                 }
                 else
@@ -96,7 +115,7 @@ namespace StoredProcedureApi.Repository
 
     public interface IUserRepo
     {
-        Task<int> CreateUserAsync(UserProfile model);
+        int CreateUserAsync(UserProfile model);
         Task <List<UserProfile>> GetUsersAsync(int id);
 
         Task <bool> DeletUsersAsync(int id);
