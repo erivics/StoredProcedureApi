@@ -22,9 +22,11 @@ namespace StoredProcedureApi.Repository
             _logger = logger;
             _conn = config.GetConnectionString("DConnection");
         }
+
+        ResponseModel response = new ResponseModel();
       
 
-        public int CreateUserAsync(UserProfile model)
+        public ResponseModel CreateUserAsync(UserProfile model)
         {
            //Declaring Parameters binding
            SqlConnection connection = new SqlConnection(_conn);
@@ -43,7 +45,7 @@ namespace StoredProcedureApi.Repository
            var oldProvParam = new SqlParameter("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
            var userIdParam = new SqlParameter("@useridout", SqlDbType.Int);
            userIdParam.Direction = ParameterDirection.Output; */
-           int result = new int();
+           //int result = new int();
            try
            {
                if(model != null)
@@ -54,14 +56,18 @@ namespace StoredProcedureApi.Repository
                    var res = sqlCommand.ExecuteNonQuery();
                    connection.Close();
             
+                   response.Error = res;
+                   response.Message = "Record Successfully created";
 
-                   //using(IDataReader dr = sqlCommand.ExecuteReader())
-                   result = res;
+                
 
                 }
                 else
                 {
-                    return -1;
+                   
+                   response.Error = -1;
+                   response.Message = " Create request not successful";
+                    
                 }
            
            }
@@ -70,7 +76,8 @@ namespace StoredProcedureApi.Repository
                _logger.LogInformation($"Error creating User:{ex.Message}");
                 
            }
-            return result;
+           
+           return response;
           
         }
 
@@ -79,22 +86,21 @@ namespace StoredProcedureApi.Repository
             throw new NotImplementedException();
         }
 
-        public async Task<List<UserProfile>> GetUsersAsync(int id)
+        public ResponseModel GetUsersAsync(int id)
         {
             
             var idParam = new SqlParameter("@id", id);
             //var passwordHashParam = new SqlParameter("@passwordHash", passwordHash);
              
-            var users =  _context.UserProfiles.FromSqlRaw(Endpoints.SqlGetUsers, idParam).ToList();
-            
-             if(users.Count < 0)
-              {
-                return null;
-              }  
-              else
-              {
-                 return Task.FromResult<List<UserProfile>>(users).Result;
-              }     
+            var user =  _context.UserProfiles.FromSqlRaw(Endpoints.SqlGetUsers, idParam);
+            var userResult =  Task.FromResult(user).Result; 
+            //if(userResult.ToString == null) return new ResponseModel {Message = "Not found", Error = 0};
+            response.Message = "Success";
+            response.Error = 1;
+            response.Result = userResult;
+                   
+            return response;  
+               
         }
 
         public Task<UserProfile> UpdateUser(UserProfile model)
@@ -115,12 +121,19 @@ namespace StoredProcedureApi.Repository
 
     public interface IUserRepo
     {
-        int CreateUserAsync(UserProfile model);
-        Task <List<UserProfile>> GetUsersAsync(int id);
+        ResponseModel CreateUserAsync(UserProfile model);
+        ResponseModel GetUsersAsync(int id);
 
         Task <bool> DeletUsersAsync(int id);
 
         Task<UserProfile> UpdateUser(UserProfile model);
+    }
+
+    public class ResponseModel
+    {
+        public int Error { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public object? Result { get; set; }
     }
 
 }

@@ -23,7 +23,7 @@ public class UserProfileController : ControllerBase
 
    [HttpPost ("create")]
    [RateLimit(PeriodInSec = 10, Limit = 3, RouteParams = "create")]
-   public IActionResult Create([FromBody] UserProfile model)
+   public ActionResult<ResponseModel> Create([FromBody] UserProfile model)
    {
       var result =  _repo.CreateUserAsync(model);
       return Ok(result);
@@ -36,10 +36,12 @@ public class UserProfileController : ControllerBase
 
    [HttpGet("{id}")]
    [RateLimit(PeriodInSec = 10, Limit = 3, RouteParams = "{id}")]
-   public async Task<IActionResult> GetUsers(int id)
+   public IActionResult GetUsers(int id)
    {
-      var result = await _repo.GetUsersAsync(id);
+      var result = _repo.GetUsersAsync(id);
       return Ok(result);
+      
+      
    }
 
 }
