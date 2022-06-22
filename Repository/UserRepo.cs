@@ -6,7 +6,7 @@ using StoredProcedureApi.Models;
 using StoredProcedureApi.SPEndpoints;
 using System.Data.SqlClient;
 using System.Configuration;
-
+using Microsoft.Extensions.Options;
 
 namespace StoredProcedureApi.Repository
 {
@@ -14,13 +14,15 @@ namespace StoredProcedureApi.Repository
     {
         private readonly AppDbContext _context;
         private readonly ILogger<UserRepo> _logger;
-        private string _conn;
+        private readonly IOptions<SConnection> _options;
+        //private string _conn;
 
-        public UserRepo(AppDbContext context, ILogger<UserRepo> logger, IConfiguration config)
+        public UserRepo(IOptions<SConnection> options,AppDbContext context, ILogger<UserRepo> logger, IConfiguration config)
         {
             _context = context;
             _logger = logger;
-            _conn = config.GetConnectionString("DConnection");
+            //_conn = config.GetConnectionString("DConnection");
+            _options = options;
         }
 
         ResponseModel response = new ResponseModel();
@@ -29,14 +31,16 @@ namespace StoredProcedureApi.Repository
         public ResponseModel CreateUserAsync(UserProfile model)
         {
            //Declaring Parameters binding
-           SqlConnection connection = new SqlConnection(_conn);
-           SqlCommand sqlCommand = new SqlCommand(Endpoints.SpCreateUsers, connection);
-           sqlCommand.CommandType = CommandType.StoredProcedure;
-           sqlCommand.Parameters.AddWithValue("@emailAddress",model.EmailAddress);
-           sqlCommand.Parameters.AddWithValue("@passwordHash", model.PasswordHash);
-           sqlCommand.Parameters.AddWithValue("@old", model.Old);
-           sqlCommand.Parameters.AddWithValue("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
-           //sqlCommand.Parameters.AddWithValue("@useridout", SqlDbType.Int);
+          using(SqlConnection connection = new SqlConnection(_options.Value.DConnection))
+        {
+             SqlCommand sqlCommand = new SqlCommand(Endpoints.SpCreateUsers, connection);
+             sqlCommand.CommandType = CommandType.StoredProcedure;
+             sqlCommand.Parameters.AddWithValue("@emailAddress",model.EmailAddress);
+             sqlCommand.Parameters.AddWithValue("@passwordHash", model.PasswordHash);
+             sqlCommand.Parameters.AddWithValue("@old", model.Old);
+             sqlCommand.Parameters.AddWithValue("@oldProvider", string.IsNullOrEmpty(model.OldProvider)? "": model.OldProvider);
+             sqlCommand.Parameters.AddWithValue("@useridout", SqlDbType.Int);
+           
 
 
            /*var emailAddParm = new SqlParameter("@emailAddress",model.EmailAddress);
@@ -47,14 +51,16 @@ namespace StoredProcedureApi.Repository
            userIdParam.Direction = ParameterDirection.Output; */
            //int result = new int();
            try
-           {
+             {
                if(model != null)
                 {                            
                   // await _context.Database.ExecuteSqlRawAsync(sqlCommand,emailAddParm,passwordHashParam,oldParam,oldProvParam,userIdParam);                  
                    //var result2 = Convert.ToInt32(userIdParam.Value); 
                    connection.Open();
                    var res = sqlCommand.ExecuteNonQuery();
+                   
                    connection.Close();
+                   connection.Dispose();
             
                    response.Error = res;
                    response.Message = "Record Successfully created";
@@ -70,16 +76,24 @@ namespace StoredProcedureApi.Repository
                     
                 }
            
-           }
+            }
            catch (SqlException ex)
-           {
+            {
                _logger.LogInformation($"Error creating User:{ex.Message}");
                 
-           }
+            }
            
            return response;
           
         }
+        
+    }
+
+           
+          
+         
+             
+             
 
         public Task<bool> DeletUsersAsync(int id)
         {
