@@ -9,7 +9,7 @@ namespace StoredProcedureApi.Models
     public static class StartupExtention
     {
         public static void ConfigureSQL(this IServiceCollection service, IConfiguration config)
-        {
+        {         
             service.Configure<SConnection>(config.GetSection("ConnectionStrings"));
         }
     }

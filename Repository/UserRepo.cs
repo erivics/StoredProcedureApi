@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using StoredProcedureApi.Models;
 using StoredProcedureApi.SPEndpoints;
-using System.Data.SqlClient;
+//using System.Data.SqlClient;  This packages was not implementing sql command
 using System.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -62,25 +62,19 @@ namespace StoredProcedureApi.Repository
                    connection.Close();
                    connection.Dispose();
             
-                   response.Error = res;
-                   response.Message = "Record Successfully created";
-
-                
-
+                   response.ErrorStatus = res;
+                   response.Message = "Record Successfully created";      
                 }
                 else
-                {
-                   
-                   response.Error = -1;
-                   response.Message = " Create request not successful";
-                    
+                {  
+                   response.ErrorStatus = -1;
+                   response.Message = " Create request not successful";                   
                 }
            
             }
            catch (SqlException ex)
             {
-               _logger.LogInformation($"Error creating User:{ex.Message}");
-                
+               _logger.LogInformation($"Error creating User:{ex.Message}");   
             }
            
            return response;
@@ -110,7 +104,7 @@ namespace StoredProcedureApi.Repository
             var userResult =  Task.FromResult(user).Result; 
             //if(userResult.ToString == null) return new ResponseModel {Message = "Not found", Error = 0};
             response.Message = "Success";
-            response.Error = 1;
+            response.ErrorStatus = 1;
             response.Result = userResult;
                    
             return response;  
@@ -123,9 +117,7 @@ namespace StoredProcedureApi.Repository
         }
     }
 
-
-
-
+       
 
 
 
@@ -143,12 +135,7 @@ namespace StoredProcedureApi.Repository
         Task<UserProfile> UpdateUser(UserProfile model);
     }
 
-    public class ResponseModel
-    {
-        public int Error { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public object? Result { get; set; }
-    }
+
 
 }
 

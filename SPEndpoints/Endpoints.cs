@@ -9,5 +9,6 @@ namespace StoredProcedureApi.SPEndpoints
         public const string SqlCreateUsers = "exec dbo.sp_CreateUser @emailAddress,@passwordHash,@old,@oldProvider, @useridout out";
 
         public const string SpCreateUsers = "sp_CreateUser";
+        public const string SpUpload = "sp_Upload";
     }
 }
