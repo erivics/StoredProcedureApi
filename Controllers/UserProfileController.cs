@@ -3,6 +3,8 @@ using DotNet.RateLimiter.ActionFilters;
 using Microsoft.AspNetCore.Mvc;
 using StoredProcedureApi.Models;
 using StoredProcedureApi.Repository;
+using OtpNet;
+using System.Text;
 
 namespace StoredProcedureApi.Controllers;
 
@@ -14,6 +16,7 @@ namespace StoredProcedureApi.Controllers;
 [Route("api/[controller]")]
 public class UserProfileController : ControllerBase
 {
+     DateTime correctUtc;
      private readonly IUserRepo _repo;
 
     public UserProfileController(IUserRepo repo)
@@ -42,6 +45,30 @@ public class UserProfileController : ControllerBase
       return Ok(result);
       
       
+   }
+
+   public IActionResult GenerateOTP ()
+   {
+      var correction = new TimeCorrection(correctUtc);
+      var totp = new Totp(secretKey(), totpSize: 4, timeCorrection: correction);
+      var code = totp.ComputeTotp();
+      return Ok(code);
+   }
+
+   public IActionResult VerifyOTP(string code)
+   {
+        var window = new VerificationWindow(previous:1, future:1);
+        var totp = new Totp(secretKey());
+        bool valid = totp.VerifyTotp(code, out long timeStepMatched, VerificationWindow.RfcSpecifiedNetworkDelay); //window = null);  
+        string validStr = valid ? "OTP Verified Successfully" : "Invalid OTP or Expired";
+        return Ok(validStr);
+   }
+
+   private byte[] secretKey()
+   {
+      string base32Secret = "SECRET";
+      var secret = Base32Encoding.ToBytes(base32Secret);
+      return secret;
    }
 
 }
