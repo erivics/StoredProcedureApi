@@ -100,7 +100,8 @@ namespace StoredProcedureApi.Repository
             var idParam = new SqlParameter("@id", id);
             //var passwordHashParam = new SqlParameter("@passwordHash", passwordHash);
              
-            var user =  _context.UserProfiles.FromSqlRaw(Endpoints.SqlGetUsers, idParam);
+            //var user =  _context.UserProfiles.FromSqlRaw("exec dbo.sp_GetUserbyId @id= {0}", id);
+            var user =  _context.UserProfiles.FromSqlRaw("exec dbo.sp_GetUserbyId @id= {0}", idParam);
             var userResult =  Task.FromResult(user).Result; 
             //if(userResult.ToString == null) return new ResponseModel {Message = "Not found", Error = 0};
             response.Message = "Success";

@@ -4,7 +4,7 @@ namespace StoredProcedureApi.SPEndpoints
     {
        public const string SqlGetUsers = "exec dbo.sp_GetUserbyId @id"; // @emailAddress,@passwordHash";
 
-        public const string SpGetUsers = "sp_GetUserbyId";
+        public const string SpGetUser = "sp_GetUserbyId";
 
         public const string SqlCreateUsers = "exec dbo.sp_CreateUser @emailAddress,@passwordHash,@old,@oldProvider, @useridout out";
 
