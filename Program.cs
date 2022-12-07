@@ -7,11 +7,19 @@ using StoredProcedureApi.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Add Microsoft Logging section
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.AddEventSourceLogger();
+
+
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(u => u.UseSqlServer(builder.Configuration.GetConnectionString("DConnection")));
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<IUploadRepo, UploadRepo>();
 builder.Services.AddRateLimitService(builder.Configuration);
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
