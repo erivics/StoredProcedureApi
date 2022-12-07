@@ -84,11 +84,6 @@ namespace StoredProcedureApi.Repository
     }
 
            
-          
-         
-             
-             
-
         public Task<bool> DeletUsersAsync(int id)
         {
             throw new NotImplementedException();
@@ -116,6 +111,11 @@ namespace StoredProcedureApi.Repository
         {
             throw new NotImplementedException();
         }
+
+        public ResponseModel GetUserById(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 
        
@@ -134,6 +134,8 @@ namespace StoredProcedureApi.Repository
         Task <bool> DeletUsersAsync(int id);
 
         Task<UserProfile> UpdateUser(UserProfile model);
+
+        ResponseModel GetUserById(int id);
     }
 
 

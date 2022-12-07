@@ -45,12 +45,6 @@ namespace StoredProcedureApi.Utility
                 message = exception.Message;
                 stackTrace = exception.StackTrace;
             }
-            else if(exceptionType == typeof(BadRequestException))
-            {
-                status = HttpStatusCode.BadRequest;
-                message = exception.Message;
-                stackTrace = exception.StackTrace;
-            }
             else if(exceptionType == typeof(NotFoundException))
             {
                 status = HttpStatusCode.NotFound;

@@ -51,12 +51,12 @@ namespace StoredProcedureApi.Repository
                     sqlCommand.Parameters.AddWithValue("@filetype", 1);//uploadmodel.FileType); 
                     sqlCommand.Parameters.AddWithValue("@imagedata", imageDataToString);
                     await connection.OpenAsync();
-                    int imageupload = await sqlCommand.ExecuteNonQueryAsync();
+                    int imageuploadedResult = await sqlCommand.ExecuteNonQueryAsync();
 
                     await connection.CloseAsync();
                     connection.Dispose();
 
-                     result = imageupload;//return result;
+                     result = imageuploadedResult;//return result;
 
                 }
                 if(result < 1)
