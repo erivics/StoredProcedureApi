@@ -25,6 +25,7 @@ namespace StoredProcedureApi.Repository
     
         public async Task<ResponseModel> UploadImage(IFormFile formFile, UploadModel uploadmodel)
         {
+            _logger.LogInformation("Default Logger: Trying to do a file upload");
             try
             {
                  int result = 0;
@@ -43,7 +44,7 @@ namespace StoredProcedureApi.Repository
                  string imageDataToString = Convert.ToBase64String(imageData);
 
                 using(var connection = new SqlConnection(_options.Value.DConnection))
-                {
+                {                  
                     //connection.ExecuteAsync(); This works using dapper.net
                     SqlCommand sqlCommand = new SqlCommand(Endpoints.SpUpload, connection);
                     sqlCommand.CommandType = CommandType.StoredProcedure;
@@ -68,7 +69,7 @@ namespace StoredProcedureApi.Repository
             catch (SqlException ex)
             {
                 
-                _logger.LogInformation($"Error uploading file:{ex.Message}");
+                _logger.LogError($"Error uploading file:{ex.Message}");
                 return new ResponseModel {Message = ex.Message, ErrorStatus = -1};
             }
             

@@ -7,11 +7,16 @@ using StoredProcedureApi.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Add Microsoft Logging section
+//Microsoft Logging configured
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.AddEventSourceLogger();
+
+//Log4Net configured
+builder.Logging.AddLog4Net("log4net.config")
+    .SetMinimumLevel(LogLevel.Trace);
+
 
 
 // Add services to the container.
